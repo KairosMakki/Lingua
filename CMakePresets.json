@@ -1,0 +1,44 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LINGUA_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "asan",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer"
+      }
+    },
+    {
+      "name": "cross-mingw",
+      "binaryDir": "${sourceDir}/build-mingw",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/mingw-w64.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "cross-aarch64",
+      "binaryDir": "${sourceDir}/build-aarch64",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/aarch64-linux.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "musl-static",
+      "binaryDir": "${sourceDir}/build-musl",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/musl.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "BUILD_SHARED_LIBS": "OFF" }
+    }
+  ]
+}

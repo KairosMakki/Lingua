@@ -1,0 +1,10 @@
+PROJECT_NAME = Lingua
+PROJECT_NUMBER = 0.1.0
+PROJECT_BRIEF = "Modular C++ library for cross-platform application formats"
+PROJECT_HOMEPAGE_URL = https://github.com/KairosMakki/Lingua
+OUTPUT_DIRECTORY = docs/api
+INPUT = include
+RECURSIVE = YES
+GENERATE_HTML = YES
+GENERATE_LATEX = NO
+EXTRACT_ALL = YES

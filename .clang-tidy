@@ -1,0 +1,4 @@
+Checks: >
+  -*,readability-*,performance-*,bugprone-*,modernize-use-nullptr,modernize-use-override
+WarningsAsErrors: ''
+HeaderFilterRegex: 'include/lingua/.*'

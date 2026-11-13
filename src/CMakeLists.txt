@@ -1,0 +1,17 @@
+add_subdirectory(core)
+add_subdirectory(detect)
+add_subdirectory(format/pe)
+add_subdirectory(format/elf)
+add_subdirectory(format/deb)
+add_subdirectory(format/appimage)
+add_subdirectory(api)
+add_subdirectory(adapters)
+add_subdirectory(import)
+
+if(LINGUA_BUILD_CLI)
+    add_subdirectory(cli)
+endif()
+
+if(LINGUA_BUILD_WEB)
+    add_subdirectory(web)
+endif()

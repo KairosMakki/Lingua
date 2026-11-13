@@ -1,0 +1,14 @@
+name: Bug report
+description: Report a bug
+body:
+  - type: textarea
+    attributes:
+      label: Description
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    attributes:
+      label: Expected behavior

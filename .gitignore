@@ -1,0 +1,36 @@
+# Build
+build/
+build-*/
+out/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!cmake/*.cmake
+!cmake/*.cmake.in
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+
+# Python
+__pycache__/
+*.pyc
+
+# Test artifacts
+*.log
+testdata/generated/
