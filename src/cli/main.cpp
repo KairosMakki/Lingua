@@ -155,6 +155,29 @@ int main(int argc, char** argv) {
                 if (e.is_dir) continue;
                 write_member(e.name, e.data);
             }
+        } else if (info->format == Format::Snap) {
+            // delegate to unsquashfs if available
+            if (std::system("command -v unsquashfs >/dev/null 2>&1") == 0) {
+                std::string cmd = "unsquashfs -f -d " + outdir + " " + std::string(argv[2]);
+                std::system(cmd.c_str());
+            } else {
+                std::vector<uint8_t> payload(f->mapping.span().begin(), f->mapping.span().end());
+                write_member("payload.squashfs", payload);
+            }
+        } else if (info->format == Format::Flatpak) {
+            std::vector<uint8_t> buf(f->mapping.span().begin(), f->mapping.span().end());
+            for (auto& e : archive::parse_tar(buf)) {
+                if (e.is_dir) continue;
+                write_member(e.name, e.data);
+            }
+        } else if (info->format == Format::Msi) {
+            if (std::system("command -v msiextract >/dev/null 2>&1") == 0) {
+                std::string cmd = "msiextract -C " + outdir + " " + std::string(argv[2]);
+                std::system(cmd.c_str());
+            } else {
+                std::vector<uint8_t> payload(f->mapping.span().begin(), f->mapping.span().end());
+                write_member("payload.msi", payload);
+            }
         } else if (info->format == Format::AppImage) {
             auto span = f->mapping.span();
             // find payload
