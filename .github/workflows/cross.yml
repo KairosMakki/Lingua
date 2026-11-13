@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
-      - run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake -DCMAKE_BUILD_TYPE=Release
+      - run: sudo apt-get update && sudo apt-get install -y build-essential cmake mingw-w64
+      - run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/cmake/toolchains/mingw-w64.cmake -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build
