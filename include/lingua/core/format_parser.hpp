@@ -27,6 +27,8 @@ public:
 
     /// Human-readable format name.
     virtual const char* name() const noexcept = 0;
+    /// Format enum value.
+    virtual Format format() const noexcept = 0;
 };
 
 /// Registry of format parsers. Thread-safe for registration at startup.

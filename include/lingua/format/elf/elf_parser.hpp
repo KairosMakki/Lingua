@@ -9,6 +9,7 @@ public:
     bool detect(std::span<const std::uint8_t> data) const override;
     Result<FileInfo> parse(std::span<const std::uint8_t> data, const std::filesystem::path& path) const override;
     const char* name() const noexcept override { return "elf"; }
+    Format format() const noexcept override { return Format::ELF; }
 };
 
 } // namespace lingua::elf

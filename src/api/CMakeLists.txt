@@ -10,6 +10,9 @@ target_link_libraries(lingua
         lingua_format_elf
         lingua_format_deb
         lingua_format_appimage
+        lingua_format_macho
+        lingua_format_rpm
+        lingua_format_apk
         lingua_adapters
         lingua_import
 )

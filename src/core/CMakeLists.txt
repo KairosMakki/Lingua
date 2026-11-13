@@ -1,4 +1,5 @@
 add_library(lingua_core
+    archive.cpp
     byte_reader.cpp
     error.cpp
     format_registry.cpp
@@ -12,6 +13,23 @@ target_include_directories(lingua_core
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+
+find_package(ZLIB QUIET)
+find_package(zstd CONFIG QUIET)
+if(ZLIB_FOUND)
+    target_link_libraries(lingua_core PRIVATE ZLIB::ZLIB)
+    target_compile_definitions(lingua_core PRIVATE LINGUA_HAVE_ZLIB)
+endif()
+if(zstd_FOUND)
+    if(TARGET zstd::libzstd)
+        target_link_libraries(lingua_core PRIVATE zstd::libzstd)
+    elseif(TARGET zstd::libzstd_shared)
+        target_link_libraries(lingua_core PRIVATE zstd::libzstd_shared)
+    elseif(TARGET zstd::libzstd_static)
+        target_link_libraries(lingua_core PRIVATE zstd::libzstd_static)
+    endif()
+    target_compile_definitions(lingua_core PRIVATE LINGUA_HAVE_ZSTD)
+endif()
 
 target_compile_features(lingua_core PUBLIC cxx_std_20)
 

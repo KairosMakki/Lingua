@@ -10,7 +10,10 @@ Lingua is a modern C++20 library for reading, inspecting, and importing cross-pl
 
 - PE (Windows executables and DLLs, 32/64-bit)
 - ELF (Linux/Unix executables and shared objects, 32/64-bit, both endiannesses)
+- Mach-O (macOS executables, including universal binaries)
 - Debian packages (.deb)
+- RPM packages (.rpm)
+- Android packages (.apk)
 - AppImage (Type 1 and Type 2)
 - Magic-number format detection on files and streams
 - Host adapters that delegate to existing tools (Wine, dpkg, native loader)

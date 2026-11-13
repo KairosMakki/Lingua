@@ -9,6 +9,7 @@ public:
     bool detect(std::span<const std::uint8_t> data) const override;
     Result<FileInfo> parse(std::span<const std::uint8_t> data, const std::filesystem::path& path) const override;
     const char* name() const noexcept override { return "appimage"; }
+    Format format() const noexcept override { return Format::AppImage; }
 };
 
 } // namespace lingua::appimage

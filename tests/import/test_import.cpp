@@ -10,9 +10,23 @@ using namespace lingua::importing;
 
 TEST_CASE("path safety", "[import]") {
     REQUIRE(is_safe_member_path("foo/bar.txt"));
+    REQUIRE(is_safe_member_path("a..b"));
     REQUIRE(!is_safe_member_path("../etc/passwd"));
     REQUIRE(!is_safe_member_path("/abs/path"));
     REQUIRE(!is_safe_member_path("C:\\windows"));
+    REQUIRE(!is_safe_member_path("foo/../bar"));
+}
+
+TEST_CASE("safe join containment", "[import]") {
+    namespace fs = std::filesystem;
+    fs::path base = fs::temp_directory_path() / "lingua-stage";
+    fs::create_directories(base);
+    fs::path evil = fs::temp_directory_path() / "lingua-stage-evil";
+    fs::create_directories(evil);
+    REQUIRE(safe_join(base, "foo.txt") == base / "foo.txt");
+    REQUIRE(safe_join(base, "../lingua-stage-evil/x").empty());
+    fs::remove_all(base);
+    fs::remove_all(evil);
 }
 
 TEST_CASE("import dry run", "[import]") {

@@ -276,9 +276,50 @@ Result<FileInfo> ElfParser::parse(std::span<const std::uint8_t> data, const std:
                         info.dependencies.push_back(Dependency{name, "", false});
                     }
                 }
+            } else if (e.first == 15 || e.first == 29) { // DT_RPATH / DT_RUNPATH
+                if (strtab_off != 0) {
+                    std::string p;
+                    size_t i = strtab_off + e.second;
+                    while (i < data.size() && data[i] != 0) { p.push_back((char)data[i]); ++i; }
+                    if (!p.empty()) {
+                        if (e.first == 15) info.metadata["rpath"] = p;
+                        else info.metadata["runpath"] = p;
+                    }
+                }
             }
         }
     }
+
+    // Security hardening metadata
+    bool pie = (ctx.e_type == 3);
+    bool nx = true;
+    bool relro = false;
+    bool has_gnu_stack = false;
+    uint32_t stack_flags = 0;
+    if (ctx.e_phoff != 0 && ctx.e_phnum > 0) {
+        for (uint32_t i = 0; i < ctx.e_phnum; ++i) {
+            size_t ph = static_cast<size_t>(ctx.e_phoff) + i * ctx.e_phentsize;
+            if (ctx.is64) {
+                if (ph + 56 > data.size()) break;
+                uint32_t p_type = rd32(data.data() + ph, ctx.little);
+                uint32_t p_flags = rd32(data.data() + ph + 4, ctx.little);
+                if (p_type == 0x6474e551) { has_gnu_stack = true; stack_flags = p_flags; nx = !(p_flags & 1); }
+                if (p_type == 0x6474e552) relro = true;
+            } else {
+                if (ph + 32 > data.size()) break;
+                uint32_t p_type = rd32(data.data() + ph, ctx.little);
+                uint32_t p_flags = 0;
+                if (ph + 28 <= data.size()) p_flags = rd32(data.data() + ph + 24, ctx.little);
+                if (p_type == 0x6474e551) { has_gnu_stack = true; stack_flags = p_flags; nx = !(p_flags & 1); }
+                if (p_type == 0x6474e552) relro = true;
+            }
+        }
+    }
+    info.metadata["pie"] = pie ? "true" : "false";
+    info.metadata["nx"] = nx ? "true" : "false";
+    info.metadata["relro"] = relro ? "true" : "false";
+    info.metadata["stack_canary"] = (std::string(data.begin(), data.end()).find("__stack_chk_fail") != std::string::npos) ? "true" : "false";
+    (void)has_gnu_stack; (void)stack_flags;
 
     return info;
 }

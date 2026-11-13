@@ -94,14 +94,21 @@ Result<FileInfo> PeParser::parse(std::span<const std::uint8_t> data, const std::
     // PE32: data dir at opt+96, PE32+: opt+112
     size_t dd_offset = is_pe32plus ? opt_offset + 112 : opt_offset + 96;
     uint32_t import_rva = 0, import_size = 0;
-    if (dd_offset + 8 <= data.size()) {
-        // import directory is 2nd entry (index 1): offset dd+8
-        size_t imp_entry = dd_offset + 8;
-        if (imp_entry + 8 <= data.size()) {
-            import_rva = data[imp_entry] | (data[imp_entry+1]<<8) | (data[imp_entry+2]<<16) | (data[imp_entry+3]<<24);
-            import_size = data[imp_entry+4] | (data[imp_entry+5]<<8) | (data[imp_entry+6]<<16) | (data[imp_entry+7]<<24);
+    uint32_t export_rva = 0, export_size = 0;
+    uint32_t security_rva = 0, security_size = 0;
+    uint32_t clr_rva = 0, clr_size = 0;
+    // Data directories
+    auto read_dd = [&](int idx, uint32_t& rva, uint32_t& sz) {
+        size_t entry = dd_offset + idx * 8;
+        if (entry + 8 <= data.size()) {
+            rva = data[entry] | (data[entry+1]<<8) | (data[entry+2]<<16) | (data[entry+3]<<24);
+            sz = data[entry+4] | (data[entry+5]<<8) | (data[entry+6]<<16) | (data[entry+7]<<24);
         }
-    }
+    };
+    read_dd(0, export_rva, export_size);
+    read_dd(1, import_rva, import_size);
+    read_dd(4, security_rva, security_size);
+    read_dd(14, clr_rva, clr_size);
 
     // Section headers
     size_t section_offset = opt_offset + size_opt;
@@ -165,6 +172,35 @@ Result<FileInfo> PeParser::parse(std::span<const std::uint8_t> data, const std::
         }
     }
 
+    // Exports
+    if (export_rva != 0) {
+        size_t exp_off = rva_to_offset(export_rva);
+        if (exp_off != 0 && exp_off + 40 <= data.size()) {
+            uint32_t num_funcs = data[exp_off+20] | (data[exp_off+21]<<8) | (data[exp_off+22]<<16) | (data[exp_off+23]<<24);
+            uint32_t num_names = data[exp_off+24] | (data[exp_off+25]<<8) | (data[exp_off+26]<<16) | (data[exp_off+27]<<24);
+            uint32_t addr_funcs = data[exp_off+28] | (data[exp_off+29]<<8) | (data[exp_off+30]<<16) | (data[exp_off+31]<<24);
+            uint32_t addr_names = data[exp_off+32] | (data[exp_off+33]<<8) | (data[exp_off+34]<<16) | (data[exp_off+35]<<24);
+            (void)num_funcs;
+            info.metadata["export_count"] = std::to_string(num_names);
+            // read export names
+            size_t funcs_off = rva_to_offset(addr_funcs);
+            size_t names_off = rva_to_offset(addr_names);
+            for (uint32_t i = 0; i < num_names && i < 10000; ++i) {
+                if (names_off == 0 || names_off + i*4 + 4 > data.size()) break;
+                uint32_t name_rva = data[names_off + i*4] | (data[names_off + i*4+1]<<8) | (data[names_off + i*4+2]<<16) | (data[names_off + i*4+3]<<24);
+                size_t noff = rva_to_offset(name_rva);
+                if (noff != 0) {
+                    std::string en;
+                    while (noff < data.size() && data[noff] != 0) { en.push_back((char)data[noff]); ++noff; }
+                    if (!en.empty()) info.exports.push_back(en);
+                }
+            }
+            (void)funcs_off;
+        }
+    }
+
+    info.metadata["authenticode"] = (security_rva != 0) ? "present" : "absent";
+    info.metadata["dotnet"] = (clr_rva != 0) ? "true" : "false";
     info.metadata["import_rva"] = std::to_string(import_rva);
     return info;
 }
