@@ -15,7 +15,7 @@ Lingua is a modern C++20 library for reading, inspecting, and importing cross-pl
 - RPM packages (.rpm)
 - Android packages (.apk)
 - AppImage (Type 1 and Type 2)
-- MSI, Flatpak, Snap (basic support)
+- MSI, Flatpak, Snap
 - Magic-number format detection on files and streams
 - Host adapters that delegate to existing tools (Wine, dpkg, native loader)
 - Import pipeline with staging, dry-run, and audit logging
