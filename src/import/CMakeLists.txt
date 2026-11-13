@@ -2,7 +2,7 @@ add_library(lingua_import
     import.cpp
 )
 add_library(lingua::import ALIAS lingua_import)
-target_link_libraries(lingua_import PUBLIC lingua_core lingua_adapters)
+target_link_libraries(lingua_import PUBLIC lingua_core lingua_adapters lingua_platform)
 target_include_directories(lingua_import
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>

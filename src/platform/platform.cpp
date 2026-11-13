@@ -1,6 +1,7 @@
 #include <lingua/platform/platform.hpp>
 #include <lingua/core/error.hpp>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -62,6 +63,35 @@ Result<int> spawn(const std::vector<std::string>& argv) {
     if (WIFEXITED(status)) return WEXITSTATUS(status);
     return Error{ErrorCode::InternalError, "process did not exit normally"};
 #endif
+}
+
+bool tool_exists(const std::string& name) {
+    const char* pathenv = std::getenv("PATH");
+    if (!pathenv) return false;
+    std::string paths = pathenv;
+    size_t start = 0;
+    while (true) {
+        size_t delim = paths.find_first_of(";:", start);
+        std::string dir = (delim == std::string::npos) ? paths.substr(start) : paths.substr(start, delim-start);
+        if (!dir.empty()) {
+            std::filesystem::path candidate = std::filesystem::path(dir) / name;
+#if defined(_WIN32)
+            for (auto ext : {std::string(""), std::string(".exe"), std::string(".bat"), std::string(".cmd")}) {
+                std::error_code ec;
+                if (std::filesystem::exists(candidate.string() + ext, ec)) return true;
+            }
+#else
+            std::error_code ec;
+            if (std::filesystem::exists(candidate, ec)) {
+                auto perms = std::filesystem::status(candidate, ec).permissions();
+                if ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) return true;
+            }
+#endif
+        }
+        if (delim == std::string::npos) break;
+        start = delim + 1;
+    }
+    return false;
 }
 
 } // namespace lingua::platform

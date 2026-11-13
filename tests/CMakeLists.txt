@@ -3,6 +3,7 @@ find_package(Catch2 3 REQUIRED CONFIG)
 add_executable(lingua_tests
     core/test_byte_reader.cpp
     core/test_mapped_file.cpp
+    core/test_archive.cpp
     detect/test_detect.cpp
     format/pe/test_pe.cpp
     format/elf/test_elf.cpp

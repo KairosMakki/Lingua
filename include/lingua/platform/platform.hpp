@@ -13,4 +13,7 @@ HostOS detect_host_os();
 /// Run a command given as an argv vector. Returns the process exit code.
 Result<int> spawn(const std::vector<std::string>& argv);
 
+/// Check whether an executable exists on PATH.
+bool tool_exists(const std::string& name);
+
 } // namespace lingua::platform

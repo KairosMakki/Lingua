@@ -12,8 +12,17 @@ namespace lingua::flatpak {
 bool FlatpakParser::detect(std::span<const std::uint8_t> data) const {
     if (data.size() < 262) return false;
     if (std::memcmp(data.data()+257, "ustar", 5) != 0) return false;
-    std::string blob(data.begin(), data.end());
-    return blob.find("flatpak") != std::string::npos || blob.find("org.flatpak") != std::string::npos;
+    // search span directly
+    const char* n1 = "flatpak";
+    const char* n2 = "org.flatpak";
+    auto find = [&](const char* n) {
+        size_t ln = std::strlen(n);
+        for (size_t i = 0; i + ln <= data.size(); ++i) {
+            if (std::memcmp(data.data() + i, n, ln) == 0) return true;
+        }
+        return false;
+    };
+    return find(n1) || find(n2);
 }
 
 Result<FileInfo> FlatpakParser::parse(std::span<const std::uint8_t> data, const std::filesystem::path& path) const {

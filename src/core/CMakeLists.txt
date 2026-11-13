@@ -1,6 +1,7 @@
 add_library(lingua_core
     archive.cpp
     byte_reader.cpp
+    hash.cpp
     error.cpp
     format_registry.cpp
     logger.cpp

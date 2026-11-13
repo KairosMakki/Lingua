@@ -31,15 +31,7 @@ HostOS detect_host_os() {
 namespace {
 
 bool tool_exists(const std::string& name) {
-#if defined(_WIN32)
-    // check PATH
-    char buf[4096];
-    std::string cmd = "where " + name + " >nul 2>&1";
-    return std::system(cmd.c_str()) == 0;
-#else
-    std::string cmd = "command -v " + name + " >/dev/null 2>&1";
-    return std::system(cmd.c_str()) == 0;
-#endif
+    return lingua::platform::tool_exists(name);
 }
 
 class PeAdapter : public IAdapter {
@@ -284,6 +276,4 @@ std::shared_ptr<IAdapter> find_adapter(Format format, HostOS host) {
 
 } // namespace lingua::adapters
 
-namespace lingua::platform {
-HostOS detect_host_os() { return lingua::adapters::detect_host_os(); }
-}
+// platform::detect_host_os implemented in platform module

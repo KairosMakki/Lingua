@@ -23,6 +23,7 @@ std::vector<ArMember> parse_ar(const std::vector<std::uint8_t>& data) {
     size_t pos = 8;
     std::string ext_names;
     while (pos + 60 <= data.size()) {
+        if (members.size() >= 100000) break;
         char name[17] = {0}; std::memcpy(name, data.data() + pos, 16);
         char sizebuf[11] = {0}; std::memcpy(sizebuf, data.data() + pos + 48, 10);
         size_t sz = 0;
@@ -31,6 +32,8 @@ std::vector<ArMember> parse_ar(const std::vector<std::uint8_t>& data) {
         while (!member_name.empty() && member_name.back() == ' ') member_name.pop_back();
         size_t data_start = pos + 60;
         if (data_start + sz > data.size()) break;
+        if (members.size() >= 100000) break;
+        if (sz > 100ULL*1024*1024) break;
         if (member_name == "//") {
             ext_names.assign(reinterpret_cast<const char*>(data.data() + data_start), sz);
         } else if (member_name != "/") {
@@ -59,6 +62,8 @@ std::vector<ArMember> parse_ar(const std::vector<std::uint8_t>& data) {
 // ---------- tar ----------
 std::vector<TarEntry> parse_tar(const std::vector<std::uint8_t>& data) {
     std::vector<TarEntry> entries;
+    const size_t MAX_ENTRIES = 100000;
+    const size_t MAX_SIZE = 100ULL * 1024 * 1024;
     size_t pos = 0;
     while (pos + 512 <= data.size()) {
         bool allzero = true;
@@ -80,6 +85,8 @@ std::vector<TarEntry> parse_tar(const std::vector<std::uint8_t>& data) {
         if (full_name.rfind("./", 0) == 0) full_name = full_name.substr(2);
         size_t data_start = pos + 512;
         if (data_start + sz > data.size()) break;
+        if (entries.size() >= 100000) break;
+        if (sz > 100ULL*1024*1024) break;
         if (typeflag == '0' || typeflag == '\0' || typeflag == '7') {
             TarEntry e; e.name = full_name;
             e.data.assign(data.data() + data_start, data.data() + data_start + sz);
@@ -155,6 +162,7 @@ std::vector<ZipEntry> parse_zip(const std::vector<std::uint8_t>& data) {
     uint16_t num_entries = data[eocd + 10] | (data[eocd + 11] << 8);
     size_t pos = cd_offset;
     for (int n = 0; n < num_entries; ++n) {
+        if (entries.size() >= 100000) break;
         if (pos + 46 > data.size()) break;
         if (rd32(data.data() + pos) != 0x02014b50) break;
         uint16_t method = data[pos + 10] | (data[pos + 11] << 8);
@@ -230,6 +238,7 @@ std::vector<TarEntry> parse_cpio(const std::vector<std::uint8_t>& data) {
     std::vector<TarEntry> entries;
     size_t pos = 0;
     while (pos + 110 <= data.size()) {
+        if (entries.size() >= 100000) break;
         if (std::memcmp(data.data() + pos, "070701", 6) != 0 && std::memcmp(data.data() + pos, "070702", 6) != 0) break;
         // fields start at pos+6, 13*8
         const char* f = reinterpret_cast<const char*>(data.data() + pos + 6);

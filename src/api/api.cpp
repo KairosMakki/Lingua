@@ -3,6 +3,7 @@
 #include <lingua/adapters/adapter.hpp>
 #include <lingua/core/error.hpp>
 #include <lingua/core/format_parser.hpp>
+#include <lingua/core/hash.hpp>
 #include <lingua/core/mapped_file.hpp>
 #include <lingua/detect/detector.hpp>
 #include <lingua/format/appimage/appimage_parser.hpp>
@@ -78,6 +79,7 @@ Result<FileInfo> inspect(const File& file) {
     auto res = parser->parse(span, file.path);
     if (!res) return res.error();
     FileInfo info = *res;
+    info.sha256 = sha256(span);
     if (info.path.empty()) info.path = file.path;
     if (info.format == Format::Unknown) info.format = parser->format();
     return info;
