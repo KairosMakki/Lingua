@@ -7,7 +7,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [0.1.0] - 2026-11-12
 
 ### Added
-- Initial release of Lingua.
+- Mach-O, RPM, and APK format support.
+- PE exports, Authenticode presence, .NET detection.
+- ELF security hardening metadata and RPATH/RUNPATH.
+- Extract command for archives and sections.
+- Web interface is localhost-only by default.
 - Core module with byte reader, memory-mapped files, error handling, format registry.
 - Format parsers: PE, ELF, Debian packages, AppImage.
 - Format detection for files and streams.

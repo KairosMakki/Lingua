@@ -213,4 +213,50 @@ std::vector<ZipEntry> parse_zip(const std::vector<std::uint8_t>& data) {
     return entries;
 }
 
+// ---------- cpio (newc) ----------
+static uint32_t parse_hex(const char* p, int n) {
+    uint32_t v = 0;
+    for (int i = 0; i < n; ++i) {
+        char c = p[i];
+        v <<= 4;
+        if (c >= '0' && c <= '9') v |= c - '0';
+        else if (c >= 'a' && c <= 'f') v |= c - 'a' + 10;
+        else if (c >= 'A' && c <= 'F') v |= c - 'A' + 10;
+    }
+    return v;
+}
+
+std::vector<TarEntry> parse_cpio(const std::vector<std::uint8_t>& data) {
+    std::vector<TarEntry> entries;
+    size_t pos = 0;
+    while (pos + 110 <= data.size()) {
+        if (std::memcmp(data.data() + pos, "070701", 6) != 0 && std::memcmp(data.data() + pos, "070702", 6) != 0) break;
+        // fields start at pos+6, 13*8
+        const char* f = reinterpret_cast<const char*>(data.data() + pos + 6);
+        uint32_t mode = parse_hex(f + 3*8, 8);
+        uint32_t filesize = parse_hex(f + 6*8, 8);
+        uint32_t namesize = parse_hex(f + 11*8, 8);
+        // name
+        size_t name_off = pos + 6 + 13*8;
+        if (name_off + namesize > data.size()) break;
+        std::string name(reinterpret_cast<const char*>(data.data() + name_off), namesize);
+        // strip trailing null
+        while (!name.empty() && name.back() == '\0') name.pop_back();
+        if (name == "TRAILER!!!") break;
+        size_t data_off = name_off + namesize;
+        // pad to 4
+        while (data_off % 4) ++data_off;
+        if (data_off + filesize > data.size()) break;
+        TarEntry e;
+        e.name = name;
+        e.is_dir = ((mode & 0xF000) == 0x4000);
+        if (!e.is_dir) e.data.assign(data.data() + data_off, data.data() + data_off + filesize);
+        entries.push_back(e);
+        size_t next = data_off + filesize;
+        while (next % 4) ++next;
+        pos = next;
+    }
+    return entries;
+}
+
 } // namespace lingua::archive

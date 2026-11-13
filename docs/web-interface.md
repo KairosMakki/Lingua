@@ -1,6 +1,6 @@
 # Web Interface
 
-Optional module (`LINGUA_BUILD_WEB=ON`). Binds to `127.0.0.1` by default. Remote binding requires an auth token.
+Optional module (`LINGUA_BUILD_WEB=ON`). Binds to `127.0.0.1` (localhost) only by default. Remote binding requires explicit opt-in and a token.
 
 ## REST API
 

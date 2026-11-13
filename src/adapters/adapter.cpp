@@ -138,7 +138,67 @@ public:
     }
 };
 
-}
+class MachOAdapter : public IAdapter {
+public:
+    std::string name() const override { return "macho-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::MachO) { r.supported = false; r.message = "not a Mach-O file"; return r; }
+        if (host == HostOS::MacOS) { r.supported = true; r.tool = "native"; r.message = "run via native loader"; }
+        else { r.supported = false; r.message = "Mach-O requires macOS"; }
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r = can_handle(Format::MachO, host);
+        if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
+        r.command = staged.string();
+        return r;
+    }
+};
+
+class RpmAdapter : public IAdapter {
+public:
+    std::string name() const override { return "rpm-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::Rpm) { r.supported = false; r.message = "not an rpm"; return r; }
+        if (host == HostOS::Linux) {
+            if (tool_exists("rpm")) { r.supported = true; r.tool = "rpm"; r.message = "install via rpm"; }
+            else { r.supported = false; r.tool = "rpm"; r.message = "rpm not found; extraction available"; }
+        } else {
+            r.supported = false; r.message = "rpm install only on Linux; extraction available";
+        }
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r = can_handle(Format::Rpm, host);
+        if (host != HostOS::Linux) {
+            r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.command = "extract " + staged.string();
+            return r;
+        }
+        if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
+        r.command = "rpm -i " + staged.string();
+        return r;
+    }
+};
+
+class ApkAdapter : public IAdapter {
+public:
+    std::string name() const override { return "apk-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::Apk) { r.supported = false; r.message = "not an apk"; return r; }
+        r.supported = false; r.message = "APK install requires Android; inspection/extraction available";
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r;
+        r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.command = "extract " + staged.string();
+        return r;
+    }
+};
+
+} // namespace
 
 std::vector<std::shared_ptr<IAdapter>> default_adapters() {
     std::vector<std::shared_ptr<IAdapter>> v;
@@ -146,6 +206,9 @@ std::vector<std::shared_ptr<IAdapter>> default_adapters() {
     v.push_back(std::make_shared<ElfAdapter>());
     v.push_back(std::make_shared<DebAdapter>());
     v.push_back(std::make_shared<AppImageAdapter>());
+    v.push_back(std::make_shared<MachOAdapter>());
+    v.push_back(std::make_shared<RpmAdapter>());
+    v.push_back(std::make_shared<ApkAdapter>());
     return v;
 }
 

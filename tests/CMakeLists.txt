@@ -8,6 +8,9 @@ add_executable(lingua_tests
     format/elf/test_elf.cpp
     format/deb/test_deb.cpp
     format/appimage/test_appimage.cpp
+    format/macho/test_macho.cpp
+    format/rpm/test_rpm.cpp
+    format/apk/test_apk.cpp
     import/test_import.cpp
 )
 target_link_libraries(lingua_tests PRIVATE

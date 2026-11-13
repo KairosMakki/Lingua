@@ -142,6 +142,19 @@ int main(int argc, char** argv) {
                 if (e.is_dir) continue;
                 write_member(e.name, e.data);
             }
+        } else if (info->format == Format::Rpm) {
+            std::vector<uint8_t> buf(f->mapping.span().begin(), f->mapping.span().end());
+            // find payload offset from metadata? parse ar? Use sections
+            size_t off = 0, sz = 0;
+            for (auto& s : info->sections) { if (s.name == "payload") { off = s.offset; sz = s.size; } }
+            if (sz == 0 && !buf.empty()) { off = 0; sz = buf.size(); }
+            std::vector<uint8_t> payload(buf.begin() + off, buf.begin() + off + sz);
+            auto dec = archive::decompress(payload);
+            if (dec.empty()) dec = payload;
+            for (auto& e : archive::parse_cpio(dec)) {
+                if (e.is_dir) continue;
+                write_member(e.name, e.data);
+            }
         } else if (info->format == Format::AppImage) {
             auto span = f->mapping.span();
             // find payload

@@ -29,6 +29,7 @@ struct ZipEntry {
 std::vector<ArMember> parse_ar(const std::vector<std::uint8_t>& data);
 std::vector<TarEntry> parse_tar(const std::vector<std::uint8_t>& data);
 std::vector<ZipEntry> parse_zip(const std::vector<std::uint8_t>& data);
+std::vector<TarEntry> parse_cpio(const std::vector<std::uint8_t>& data);
 std::vector<std::uint8_t> decompress(const std::vector<std::uint8_t>& data);
 
 } // namespace lingua::archive
