@@ -11,6 +11,9 @@ add_executable(lingua_tests
     format/macho/test_macho.cpp
     format/rpm/test_rpm.cpp
     format/apk/test_apk.cpp
+    format/msi/test_msi.cpp
+    format/flatpak/test_flatpak.cpp
+    format/snap/test_snap.cpp
     import/test_import.cpp
 )
 target_link_libraries(lingua_tests PRIVATE

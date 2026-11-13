@@ -36,3 +36,18 @@ add_executable(fuzz_apk fuzz_apk.cpp)
 target_link_libraries(fuzz_apk PRIVATE lingua_format_apk)
 target_compile_options(fuzz_apk PRIVATE -fsanitize=fuzzer,address)
 target_link_options(fuzz_apk PRIVATE -fsanitize=fuzzer,address)
+
+add_executable(fuzz_msi fuzz_msi.cpp)
+target_link_libraries(fuzz_msi PRIVATE lingua_format_msi)
+target_compile_options(fuzz_msi PRIVATE -fsanitize=fuzzer,address)
+target_link_options(fuzz_msi PRIVATE -fsanitize=fuzzer,address)
+
+add_executable(fuzz_flatpak fuzz_flatpak.cpp)
+target_link_libraries(fuzz_flatpak PRIVATE lingua_format_flatpak)
+target_compile_options(fuzz_flatpak PRIVATE -fsanitize=fuzzer,address)
+target_link_options(fuzz_flatpak PRIVATE -fsanitize=fuzzer,address)
+
+add_executable(fuzz_snap fuzz_snap.cpp)
+target_link_libraries(fuzz_snap PRIVATE lingua_format_snap)
+target_compile_options(fuzz_snap PRIVATE -fsanitize=fuzzer,address)
+target_link_options(fuzz_snap PRIVATE -fsanitize=fuzzer,address)
