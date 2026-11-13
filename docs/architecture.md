@@ -6,7 +6,7 @@ Lingua is organized into layered modules, each a separate CMake target with its 
 
 - `lingua-core`: shared types, error handling, byte reader, memory-mapped files, logging, format registry.
 - `lingua-detect`: magic-number and heuristic format detection.
-- Format modules: `lingua-format-pe`, `lingua-format-elf`, `lingua-format-deb`, `lingua-format-appimage`.
+- Format modules: `lingua-format-pe`, `lingua-format-elf`, `lingua-format-deb`, `lingua-format-appimage`, `lingua-format-macho`, `lingua-format-rpm`, `lingua-format-apk`, `lingua-format-msi`, `lingua-format-flatpak`, `lingua-format-snap`.
 - `lingua-adapters`: host OS adapters that delegate to existing tools.
 - `lingua-import`: import pipeline.
 - `lingua-web`: optional local web server and UI.
