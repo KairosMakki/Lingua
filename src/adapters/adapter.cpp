@@ -64,8 +64,8 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::PE, host);
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        if (r.tool == "wine") r.command = "wine " + staged.string();
-        else r.command = staged.string();
+        if (r.tool == "wine") r.argv = {"wine", staged.string()};
+        else r.argv = {staged.string()};
         return r;
     }
 };
@@ -86,7 +86,7 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::ELF, host);
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        r.command = staged.string();
+        r.argv = {staged.string()};
         return r;
     }
 };
@@ -108,11 +108,11 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::Deb, host);
         if (host != HostOS::Linux) {
-            r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.command = "extract " + staged.string();
+            r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.argv = {"extract", staged.string()};
             return r;
         }
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        r.command = "dpkg -i " + staged.string();
+        r.argv = {"dpkg", "-i", staged.string()};
         return r;
     }
 };
@@ -133,7 +133,7 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::AppImage, host);
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        r.command = staged.string();
+        r.argv = {staged.string()};
         return r;
     }
 };
@@ -151,7 +151,7 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::MachO, host);
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        r.command = staged.string();
+        r.argv = {staged.string()};
         return r;
     }
 };
@@ -173,11 +173,65 @@ public:
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r = can_handle(Format::Rpm, host);
         if (host != HostOS::Linux) {
-            r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.command = "extract " + staged.string();
+            r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.argv = {"extract", staged.string()};
             return r;
         }
         if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
-        r.command = "rpm -i " + staged.string();
+        r.argv = {"rpm", "-i", staged.string()};
+        return r;
+    }
+};
+
+class MsiAdapter : public IAdapter {
+public:
+    std::string name() const override { return "msi-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::Msi) { r.supported = false; r.message = "not an msi"; return r; }
+        if (host == HostOS::Windows) { r.supported = true; r.tool = "native"; r.message = "install via msiexec"; }
+        else { r.supported = false; r.message = "MSI requires Windows"; }
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r = can_handle(Format::Msi, host);
+        if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
+        r.argv = {"msiexec", "/i", staged.string()};
+        return r;
+    }
+};
+
+class FlatpakAdapter : public IAdapter {
+public:
+    std::string name() const override { return "flatpak-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::Flatpak) { r.supported = false; r.message = "not a flatpak"; return r; }
+        if (host == HostOS::Linux && tool_exists("flatpak")) { r.supported = true; r.tool = "flatpak"; r.message = "install via flatpak"; }
+        else { r.supported = false; r.message = "flatpak tool not found"; }
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r = can_handle(Format::Flatpak, host);
+        if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
+        r.argv = {"flatpak", "install", staged.string()};
+        return r;
+    }
+};
+
+class SnapAdapter : public IAdapter {
+public:
+    std::string name() const override { return "snap-adapter"; }
+    AdapterResult can_handle(Format format, HostOS host) const override {
+        AdapterResult r;
+        if (format != Format::Snap) { r.supported = false; r.message = "not a snap"; return r; }
+        if (host == HostOS::Linux && tool_exists("snap")) { r.supported = true; r.tool = "snap"; r.message = "install via snap"; }
+        else { r.supported = false; r.message = "snap tool not found"; }
+        return r;
+    }
+    Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
+        AdapterResult r = can_handle(Format::Snap, host);
+        if (!r.supported) return Error{ErrorCode::UnsupportedHost, r.message};
+        r.argv = {"snap", "install", staged.string()};
         return r;
     }
 };
@@ -193,7 +247,7 @@ public:
     }
     Result<AdapterResult> prepare(const std::filesystem::path& staged, HostOS host) const override {
         AdapterResult r;
-        r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.command = "extract " + staged.string();
+        r.supported = true; r.tool = "extract"; r.message = "extract contents only"; r.argv = {"extract", staged.string()};
         return r;
     }
 };
@@ -209,6 +263,9 @@ std::vector<std::shared_ptr<IAdapter>> default_adapters() {
     v.push_back(std::make_shared<MachOAdapter>());
     v.push_back(std::make_shared<RpmAdapter>());
     v.push_back(std::make_shared<ApkAdapter>());
+    v.push_back(std::make_shared<MsiAdapter>());
+    v.push_back(std::make_shared<FlatpakAdapter>());
+    v.push_back(std::make_shared<SnapAdapter>());
     return v;
 }
 

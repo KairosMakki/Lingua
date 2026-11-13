@@ -1,0 +1,6 @@
+add_library(lingua_format_msi msi_parser.cpp)
+add_library(lingua::msi ALIAS lingua_format_msi)
+target_link_libraries(lingua_format_msi PUBLIC lingua_core lingua_detect)
+target_include_directories(lingua_format_msi PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+target_compile_features(lingua_format_msi PUBLIC cxx_std_20)
+install(TARGETS lingua_format_msi EXPORT LinguaTargets ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin INCLUDES DESTINATION include)

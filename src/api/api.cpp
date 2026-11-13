@@ -7,6 +7,9 @@
 #include <lingua/detect/detector.hpp>
 #include <lingua/format/appimage/appimage_parser.hpp>
 #include <lingua/format/apk/apk_parser.hpp>
+#include <lingua/format/flatpak/flatpak_parser.hpp>
+#include <lingua/format/msi/msi_parser.hpp>
+#include <lingua/format/snap/snap_parser.hpp>
 #include <lingua/format/deb/deb_parser.hpp>
 #include <lingua/format/elf/elf_parser.hpp>
 #include <lingua/format/macho/macho_parser.hpp>
@@ -28,6 +31,9 @@ void ensure_registry() {
     reg.register_parser(std::make_shared<appimage::AppImageParser>());
     reg.register_parser(std::make_shared<deb::DebParser>());
     reg.register_parser(std::make_shared<apk::ApkParser>());
+    reg.register_parser(std::make_shared<msi::MsiParser>());
+    reg.register_parser(std::make_shared<flatpak::FlatpakParser>());
+    reg.register_parser(std::make_shared<snap::SnapParser>());
     reg.register_parser(std::make_shared<macho::MachOParser>());
     reg.register_parser(std::make_shared<rpm::RpmParser>());
     reg.register_parser(std::make_shared<elf::ElfParser>());
@@ -63,6 +69,9 @@ Result<FileInfo> inspect(const File& file) {
             case Format::MachO: parser = std::make_shared<macho::MachOParser>(); break;
             case Format::Rpm: parser = std::make_shared<rpm::RpmParser>(); break;
             case Format::Apk: parser = std::make_shared<apk::ApkParser>(); break;
+            case Format::Msi: parser = std::make_shared<msi::MsiParser>(); break;
+            case Format::Flatpak: parser = std::make_shared<flatpak::FlatpakParser>(); break;
+            case Format::Snap: parser = std::make_shared<snap::SnapParser>(); break;
             default: return Error{ErrorCode::UnsupportedFormat, "unsupported format"};
         }
     }

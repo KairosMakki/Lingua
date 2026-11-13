@@ -13,6 +13,9 @@ target_link_libraries(lingua
         lingua_format_macho
         lingua_format_rpm
         lingua_format_apk
+        lingua_format_msi
+        lingua_format_flatpak
+        lingua_format_snap
         lingua_adapters
         lingua_import
 )

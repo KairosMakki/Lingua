@@ -284,7 +284,7 @@ void handle_client(socket_t s, WebServer::Impl* impl) {
         std::ostringstream json;
         json << "{\"success\":" << (res->success?"true":"false")
              << ",\"staged\":\"" << json_escape(res->staged_path.string()) << "\""
-             << ",\"command\":\"" << json_escape(res->adapter_command) << "\""
+             << ",\"command\":\"" << json_escape([&](){ std::string c; for (size_t i=0;i<res->adapter_argv.size();++i){ if(i)c+=" "; c+=res->adapter_argv[i]; } return c; }()) << "\""
              << ",\"warnings\":[";
         bool first = true;
         for (auto& w : res->warnings) { if (!first) json << ","; first=false; json << "\"" << json_escape(w) << "\""; }

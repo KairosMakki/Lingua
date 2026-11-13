@@ -21,7 +21,7 @@ struct ImportOptions {
 struct ImportResult {
     bool success = false;
     std::filesystem::path staged_path;
-    std::string adapter_command;
+    std::vector<std::string> adapter_argv;
     std::vector<std::string> warnings;
     std::string audit_entry;
 };

@@ -14,11 +14,12 @@ enum class Format {
     ELF,
     Deb,
     AppImage,
-    MachO, // not yet implemented
-    Rpm,   // not yet implemented
-    Apk,   // not yet implemented
-    Msi,   // not yet implemented
-    Flatpak // not yet implemented
+    MachO,
+    Rpm,
+    Apk,
+    Msi,
+    Flatpak,
+    Snap
 };
 
 enum class Architecture {
@@ -88,6 +89,7 @@ inline const char* to_string(Format f) {
         case Format::Apk: return "apk";
         case Format::Msi: return "msi";
         case Format::Flatpak: return "flatpak";
+        case Format::Snap: return "snap";
     }
     return "unknown";
 }

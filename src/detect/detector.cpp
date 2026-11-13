@@ -34,6 +34,15 @@ Format detect_format(std::span<const std::uint8_t> data) {
         std::string blob(data.begin(), data.end());
         if (blob.find("AndroidManifest.xml") != std::string::npos || blob.find("classes.dex") != std::string::npos) return Format::Apk;
     }
+    // MSI
+    if (data.size() >= 8 && data[0]==0xD0 && data[1]==0xCF && data[2]==0x11 && data[3]==0xE0 && data[4]==0xA1 && data[5]==0xB1 && data[6]==0x1A && data[7]==0xE1) return Format::Msi;
+    // Snap (squashfs)
+    if (data.size() >= 4 && data[0]=='h' && data[1]=='s' && data[2]=='q' && data[3]=='s') return Format::Snap;
+    // Flatpak
+    if (data.size() >= 262 && std::memcmp(data.data()+257, "ustar", 5) == 0) {
+        std::string blob(data.begin(), data.end());
+        if (blob.find("flatpak") != std::string::npos) return Format::Flatpak;
+    }
     return Format::Unknown;
 }
 

@@ -198,7 +198,11 @@ int main(int argc, char** argv) {
         if (!res) { std::cerr << "error: " << res.error().message << "\n"; return 1; }
         std::cout << "success: " << (res->success ? "true" : "false") << "\n";
         std::cout << "staged: " << res->staged_path.string() << "\n";
-        if (!res->adapter_command.empty()) std::cout << "command: " << res->adapter_command << "\n";
+        if (!res->adapter_argv.empty()) {
+            std::cout << "command:";
+            for (auto& a : res->adapter_argv) std::cout << " " << a;
+            std::cout << "\n";
+        }
         for (auto& w : res->warnings) std::cout << "warning: " << w << "\n";
         return 0;
     }

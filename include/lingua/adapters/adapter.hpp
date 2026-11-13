@@ -12,8 +12,8 @@ namespace lingua::adapters {
 
 struct AdapterResult {
     bool supported = false;
-    std::string tool;          // delegate tool name
-    std::string command;       // suggested command
+    std::string tool;                 // delegate tool name
+    std::vector<std::string> argv;    // command as argv vector
     std::string message;
 };
 

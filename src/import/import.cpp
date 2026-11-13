@@ -154,13 +154,16 @@ Result<ImportResult> import_app(const FileInfo& info, const fs::path& source, co
     if (adapter) {
         auto ar = adapter->prepare(staged, host);
         if (ar) {
-            result.adapter_command = ar->command;
+            result.adapter_argv = ar->argv;
             if (opts.sandbox && host == HostOS::Linux) {
-                // wrap with bubblewrap/firejail if available
                 if (std::system("command -v bwrap >/dev/null 2>&1") == 0) {
-                    result.adapter_command = "bwrap --ro-bind / / " + result.adapter_command;
+                    std::vector<std::string> wrapped = {"bwrap", "--ro-bind", "/", "/"};
+                    wrapped.insert(wrapped.end(), result.adapter_argv.begin(), result.adapter_argv.end());
+                    result.adapter_argv = wrapped;
                 } else if (std::system("command -v firejail >/dev/null 2>&1") == 0) {
-                    result.adapter_command = "firejail " + result.adapter_command;
+                    std::vector<std::string> wrapped = {"firejail"};
+                    wrapped.insert(wrapped.end(), result.adapter_argv.begin(), result.adapter_argv.end());
+                    result.adapter_argv = wrapped;
                 }
             }
             if (!ar->supported) result.warnings.push_back(ar->message);
